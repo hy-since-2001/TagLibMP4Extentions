@@ -11,29 +11,34 @@ namespace UnitTest
     [TestClass]
     public class TestMp4MetaTagProvider
     {
+        string _mp4Path = Path.Combine(Environment.CurrentDirectory, "Test.mp4");
+
+        /// <summary>
+        /// MetaTagがファイルに設定されているかをチェックする。
+        /// </summary>
         [TestMethod]
-        public void TestSetGetMetaTag()
+        public void CheckSetMetaTag()
         {
-            var mp4Path = Path.Combine(Environment.CurrentDirectory, "Test.mp4");
-            var setTag = new[] { "test1", "テスト２", "test３", "ﾃｽﾄ4", DateTime.Now.ToString("yyyyMMddhhmmss") };
+            //通常のテスト       
+            var task1 = IsEqualGetMetaTag(new string[] { "test1", "テスト２", "test３", "ﾃｽﾄ4", DateTime.Now.ToString("yyyyMMddhhmmss") });
+            Assert.IsTrue(task1.Result);
 
-            var setTask = SetMetaTagAsync(mp4Path, setTag);
-            setTask.Wait();
-
-            var getTask = GetMetaTagAsync(mp4Path);
-            var getTag = getTask.Result;
-
-            CollectionAssert.AreEqual(setTag.ToList(), getTag.ToList());
+            //環境依存文字
+            var task2 = IsEqualGetMetaTag(new string[] { "①②③" });
+            Assert.IsTrue(task2.Result);
         }
 
-        private async Task SetMetaTagAsync(string mp4Path, IEnumerable<string> setTag)
+        /// <summary>
+        /// MetaTagを設定した後に、MetaTaguを取得して比べる
+        /// </summary>
+        /// <param name="setTag">設定するタグ</param>
+        /// <returns>ture:一致、false:不一致</returns>
+        private async Task<bool> IsEqualGetMetaTag(IEnumerable<string> setTag)
         {
-            await TagLibMP4Extentions.SetMetaTagAsync(mp4Path, setTag);
-        }
+            await TagLibMP4Extentions.SetMetaTagAsync(_mp4Path, setTag);
+            var getTag = await TagLibMP4Extentions.GetMetaTagAsync(_mp4Path);
 
-        private async Task<IEnumerable<string>> GetMetaTagAsync(string mp4Path)
-        {
-            return await TagLibMP4Extentions.GetMetaTagAsync(mp4Path);
+            return setTag.SequenceEqual(getTag);
         }
     }
 }
