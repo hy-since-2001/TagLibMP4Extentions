@@ -113,7 +113,7 @@ namespace TagLibExtentions
                 //5～8byte 00,00,00,0B固定
                 data += new byte[] { 0x00, 0x00, 0x00, 0x0B };
 
-                //5～19byte WM/Category文字列
+                //9～19byte WM/Category文字列
                 data += Encoding.UTF8.GetBytes(PKEY_Keywords);
 
                 //20～23byte タグ文字列の配列数 
